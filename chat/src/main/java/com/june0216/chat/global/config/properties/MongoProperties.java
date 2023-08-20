@@ -1,4 +1,4 @@
-package com.june0216.chat.global.config.datasource;
+package com.june0216.chat.global.config.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -9,6 +9,18 @@ import lombok.Data;
 @Component
 @ConfigurationProperties(prefix = "mongodb")
 public class MongoProperties {
-	String client;
-	String name;
+	private String client;
+	private String name;
+
+	public String getClient(){
+		return "mongodb://localhost:27017";
+	}
+
+	public String getName(){
+		return "kuddy";
+	}
+
+
 }
+
+

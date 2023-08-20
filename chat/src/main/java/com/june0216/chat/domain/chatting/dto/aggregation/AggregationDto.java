@@ -16,7 +16,7 @@ import lombok.ToString;
 @AllArgsConstructor
 public class AggregationDto implements Serializable {
 
-	private Long spotNo;
+
 	private String isIncrease;
 	private AggregationTarget target;
 }

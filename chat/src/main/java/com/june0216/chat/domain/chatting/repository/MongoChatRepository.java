@@ -1,4 +1,4 @@
-package com.june0216.chat.domain;
+package com.june0216.chat.domain.chatting.repository;
 
 import java.util.List;
 

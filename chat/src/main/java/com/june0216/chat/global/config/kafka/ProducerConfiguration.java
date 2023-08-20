@@ -14,10 +14,18 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import com.google.common.collect.ImmutableMap;
 import com.june0216.chat.domain.chatting.domain.Message;
+import com.june0216.chat.domain.chatting.dto.aggregation.AggregationDto;
+import com.june0216.chat.global.config.properties.KafkaAdoptProperties;
+import com.june0216.chat.global.config.properties.KafkaAggregationProperties;
+
+import lombok.RequiredArgsConstructor;
 
 @EnableKafka
 @Configuration
+@RequiredArgsConstructor
 public class ProducerConfiguration {
+	private final KafkaAdoptProperties adoptProperties;
+	private final KafkaAggregationProperties aggregationProperties;
 
 	// Kafka ProducerFactory를 생성하는 Bean 메서드
 	@Bean
@@ -35,9 +43,36 @@ public class ProducerConfiguration {
 			.build();
 	}
 
+	// Kafka Producer 구성을 위한 설정값들을 포함한 맵을 반환하는 메서드
+	@Bean
+	public Map<String, Object> aggregationProducerConfiguration() {
+		return ImmutableMap.<String, Object>builder()
+			.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+			.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class)
+			.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class)
+			.build();
+	}
+
 	// KafkaTemplate을 생성하는 Bean 메서드
 	@Bean
 	public KafkaTemplate<String, Message> kafkaTemplate() {
 		return new KafkaTemplate<>(producerFactory());
 	}
+	@Bean
+	public ProducerFactory<String, AggregationDto> aggregationProducerFactory() {
+		return new DefaultKafkaProducerFactory<>(adoptProducerConfiguration());
+	}
+	@Bean
+	public Map<String, Object> adoptProducerConfiguration() {
+		return ImmutableMap.<String, Object>builder()
+			.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+			.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class)
+			.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class)
+			.build();
+	}
+	@Bean
+	public KafkaTemplate<String, AggregationDto> aggregationKafkaTemplate() {
+		return new KafkaTemplate<>(aggregationProducerFactory());
+	}
+
 }

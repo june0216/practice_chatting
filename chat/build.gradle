@@ -64,6 +64,8 @@ dependencies {
     //redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
     // querydsl 추가
     //querydsl 추가
     implementation 'com.querydsl:querydsl-jpa'

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,24 +26,24 @@ import com.june0216.chat.domain.chatting.service.ChatService;
 import com.june0216.chat.domain.member.domain.Member;
 import com.june0216.chat.domain.member.service.MemberService;
 import com.june0216.chat.global.dto.StatusResponseDto;
+import com.june0216.chat.global.util.AuthUser;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 
 @RestController
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class ChatController {
 	private final ChatService chatService;
 	private final ChatRoomService chatRoomService;
 	private final MemberService memberService;
 
-	@PostMapping("/chatroom")
-	public ResponseEntity<StatusResponseDto> createChatRoom(@RequestBody @Valid final ChatRequestDto requestDto, BindingResult bindingResult, @RequestParam final Long memberId) {
+	@PostMapping("/chatrooms")
+	public ResponseEntity<StatusResponseDto> createChatRoom(@RequestBody @Valid final ChatRequestDto requestDto, BindingResult bindingResult, @RequestParam Long memberId) {
+
 		Member member = memberService.findById(memberId);
-		if (bindingResult.hasErrors()) {
-			return ResponseEntity.badRequest().body(StatusResponseDto.addStatus(400));
-		}
 
 		// 채팅방을 만들어준다.
 		chatService.makeChatRoom(member, requestDto);
@@ -52,23 +53,22 @@ public class ChatController {
 
 	// 채팅내역 조회
 	@GetMapping("/chatroom/{roomNo}")
-	public ResponseEntity<ChattingHistoryResponseDto> chattingList(@PathVariable("roomNo") Integer roomNo, @RequestParam final Long memberId) {
-		Member member = memberService.findById(memberId);
+	public ResponseEntity<ChattingHistoryResponseDto> chattingList(@PathVariable("roomNo") Integer roomNo, @AuthUser Member member) {
+		//Member member = memberService.findById(member);
 		ChattingHistoryResponseDto chattingList = chatService.getChattingList(roomNo, member);
 		return ResponseEntity.ok(chattingList);
 	}
 
 	// 채팅방 리스트 조회
 	@GetMapping("/chatroom")
-	public ResponseEntity<List<ChatRoomResponseDto>> chatRoomList(@RequestParam(value = "spotNo", required = false) final Long spotNo ,@RequestParam final Long memberId) {
-		Member member = memberService.findById(memberId);
+	public ResponseEntity<List<ChatRoomResponseDto>> chatRoomList(@RequestParam(value = "spotNo", required = false) final Long spotNo ,@AuthUser Member member) {
 		List<ChatRoomResponseDto> chatList = chatService.getChatList(member, spotNo);
 		return ResponseEntity.ok(chatList);
 	}
 
 	@MessageMapping("/message")
-	public void sendMessage(@Valid Message message, @Header("Authorization") final Long memberId) {
-		chatService.sendMessage(message, memberId);
+	public void sendMessage(@Valid Message message, @Header("Authorization") final String authorization) {
+		chatService.sendMessage(message, authorization);
 	}
 
 	// 채팅방 접속 끊기

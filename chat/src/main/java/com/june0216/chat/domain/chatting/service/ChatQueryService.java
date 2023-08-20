@@ -44,12 +44,11 @@ public class ChatQueryService {
 	private final MemberRepository memberRepository;
 
 	// 채팅방 리스트 조회
-	public List<ChatRoomResponseDto> getChattingList(Long memberId, Long spotNo) {
+	public List<ChatRoomResponseDto> getChattingList(Long memberId) {
 		return jpaQueryFactory.select(Projections.constructor(ChatRoomResponseDto.class,
 				chat.chatNo,
 				chat.createMember,
 				chat.joinMember,
-				chat.spotNo,
 				chat.regDate,
 				Projections.constructor(ChatRoomResponseDto.Participant.class,
 					ExpressionUtils.as(
@@ -59,7 +58,6 @@ public class ChatQueryService {
 								new CaseBuilder()
 									.when(chat.createMember.eq(memberId)).then(chat.joinMember)
 									.otherwise(chat.createMember)
-
 							))
 						, "nickname"),
 					ExpressionUtils.as(
@@ -72,8 +70,7 @@ public class ChatQueryService {
 							)), "profile"))
 			))
 			.from(chat)
-			.join(spot).on(spot.spotNo.eq(chat.spotNo))
-			.where(chat.createMember.eq(memberId).or(chat.joinMember.eq(memberId)), spotNoEq(spotNo))
+			.where(chat.createMember.eq(memberId))
 			.fetch();
 	}
 
@@ -91,8 +88,8 @@ public class ChatQueryService {
 			.orElseThrow(IllegalStateException::new);
 	}
 
-	private BooleanExpression spotNoEq(Long spotNo) {
+/*	private BooleanExpression spotNoEq(Long spotNo) {
 		return Objects.nonNull(spotNo) ? chat.spotNo.eq(spotNo) : null;
-	}
+	}*/
 
 }

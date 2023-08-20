@@ -115,7 +115,7 @@ public class JwtProvider {
 	}
 
 	// JWT payload를 복호화해서 반환
-	private Claims getClaims(String token) {
+	public Claims getClaims(String token) {
 		try {
 			return Jwts.parserBuilder() // JwtParserBuilder 인스턴스 생성
 				.setSigningKey(getSignKey(secretKey)) // JWT Signature 검증을 위한 SecretKey 설정

@@ -38,9 +38,6 @@ public class Chat {
 	@Column(name = "join_member")
 	private Long joinMember;
 
-	@Column(name = "spot_no")
-	private Long spotNo;
-
 	@Column(name = "reg_date")
 	private LocalDateTime regDate;
 }

@@ -11,10 +11,12 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import com.june0216.chat.domain.MongoChatRepository;
+import com.june0216.chat.domain.chatting.repository.MongoChatRepository;
 import com.june0216.chat.domain.chatting.domain.AggregationSender;
 import com.june0216.chat.domain.chatting.domain.Chat;
 import com.june0216.chat.domain.chatting.domain.mongo.Chatting;
@@ -28,8 +30,10 @@ import com.june0216.chat.domain.chatting.dto.response.ChattingHistoryResponseDto
 import com.june0216.chat.domain.chatting.repository.ChatRepository;
 import com.june0216.chat.domain.member.domain.Member;
 import com.june0216.chat.domain.member.repository.MemberRepository;
+import com.june0216.chat.global.jwt.JwtProvider;
 import com.june0216.chat.global.util.ConstantUtil;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,17 +53,19 @@ public class ChatService {
 
 	private final ChatRoomService chatRoomService;
 	//private final NotificationService notificationService;
+	private final JwtProvider jwtProvider;
 
 	@Transactional
 	public Chat makeChatRoom(Member member, ChatRequestDto requestDto) {
-
+		System.out.println(requestDto.getCreateMember());
+		System.out.println(member.getMemberId());
 		Chat chat = Chat.builder()
-			.spotNo(requestDto.getSpotNo())
 			.createMember(requestDto.getCreateMember())
 			.joinMember(member.getMemberId())
 			.regDate(LocalDateTime.now())
 			.build();
-
+		System.out.println(requestDto.getCreateMember());
+		System.out.println(member.getMemberId());
 		Chat savedChat = chatRepository.save(chat);
 
 		// 채팅방 카운트 증가
@@ -67,7 +73,6 @@ public class ChatService {
 			.builder()
 			.isIncrease("true")
 			.target(AggregationTarget.CHAT)
-			.spotNo(requestDto.getSpotNo())
 			.build();
 
 		aggregationSender.send(ConstantUtil.KAFKA_AGGREGATION, aggregationDto);
@@ -75,7 +80,7 @@ public class ChatService {
 	}
 
 	public List<ChatRoomResponseDto> getChatList(Member member, Long spotNo) {
-		List<ChatRoomResponseDto> chatRoomList = chatQueryService.getChattingList(member.getMemberId(), spotNo);
+		List<ChatRoomResponseDto> chatRoomList = chatQueryService.getChattingList(member.getMemberId());
 
 		chatRoomList
 			.forEach(chatRoomDto -> {
@@ -113,10 +118,18 @@ public class ChatService {
 	}
 
 
-	public void sendMessage(Message message, Long memberId) {
+	public void sendMessage(Message message, String authorization) {
+		String accessToken = null;
 		// 메시지 전송 요청 헤더에 포함된 Access Token에서 email로 회원을 조회한다.
-		Member findMember = memberRepository.findById(memberId)
-			.orElseThrow(IllegalStateException::new);
+
+		if (StringUtils.hasText(authorization) && authorization.startsWith("Bearer ")) {
+			// Token 값만 추출한다.
+			accessToken =  authorization.substring(7);
+		}
+		Claims claims = jwtProvider.getClaims(accessToken); //TODO 임시로직 변경 필요
+		String email = claims.getSubject();
+		Member findMember = memberRepository.findByEmail(email).orElseThrow();
+
 
 		// 채팅방에 모든 유저가 참여중인지 확인한다.
 		boolean isConnectedAll = chatRoomService.isAllConnected(message.getChatNo());
@@ -141,7 +154,7 @@ public class ChatService {
 			String content =
 				message.getContentType().equals("image") ? "image" : message.getContent();
 			// 알람을 보낼 URL을 생성한다.
-			String sendUrl = getNotificationUrl(message.getSpotNo(), message.getChatNo());
+			//String sendUrl = getNotificationUrl(message.getSpotNo(), message.getChatNo());
 
 			// 알림을 전송한다.
 

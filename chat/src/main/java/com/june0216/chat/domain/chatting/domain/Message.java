@@ -37,8 +37,6 @@ public class Message implements Serializable { //Kafka와 Stomp Client 설정
 
 	private Long senderNo;
 
-	@NotNull
-	private Long spotNo;
 
 	private long sendTime;
 	private Integer readCount;

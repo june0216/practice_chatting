@@ -37,38 +37,27 @@ public class Member {
 	@Column(name = "email")
 	private String email;
 
-	@Column(name = "address")
-	private String address;
 
 	private String password;
 
 	@Column(name = "nickname")
 	private String nickname;
 
-	@Column(name = "out_yn")
-	private String outYn;
 
-	@Column(name = "denined_yn")
-	private String deninedYn;
+	@Column(name = "role_user")
+	private String roleUser;
 
-	@Column(name = "user_role")
-	private String userRole;
-
-	@Column(name = "platform")
-	private String platform;
 
 	@Column(name = "profile")
 	private String profile;
 
-	@Column(name = "reg_date")
-	private LocalDateTime regDate;
-
-	@Column(name = "nickmod_date")
-	private LocalDateTime nickModDate;
-
-	@Column(name = "passmod_date")
-	private LocalDateTime passModDate;
-
+	@Builder
+	public Member(String email, String password, String nickname, String profile) {
+		this.email = email;
+		this.password = password;
+		this.nickname = nickname;
+		this.profile = profile;
+	}
 
 	public void addProfileImage(String imgUrl) {
 		this.profile = imgUrl;
