@@ -60,7 +60,7 @@ public class ChatController {
 	}
 
 	// 채팅방 리스트 조회
-	@GetMapping("/chatroom")
+	@GetMapping("/chatrooms")
 	public ResponseEntity<List<ChatRoomResponseDto>> chatRoomList(@RequestParam(value = "spotNo", required = false) final Long spotNo ,@AuthUser Member member) {
 		List<ChatRoomResponseDto> chatList = chatService.getChatList(member, spotNo);
 		return ResponseEntity.ok(chatList);
@@ -72,17 +72,17 @@ public class ChatController {
 	}
 
 	// 채팅방 접속 끊기
-	@PostMapping("/chatroom/{chatroomNo}")
-	public ResponseEntity<StatusResponseDto> disconnectChat(@PathVariable("chatroomNo") Integer chatroomNo,
+	@PostMapping("/chatrooms/{chatroomId}")
+	public ResponseEntity<StatusResponseDto> disconnectChat(@PathVariable("chatroomNo") Integer chatroomId,
 		@RequestParam("email") String email) {
 
-		chatRoomService.disconnectChatRoom(chatroomNo, email);
+		chatRoomService.disconnectChatRoom(chatroomId, email);
 		return ResponseEntity.ok(StatusResponseDto.success());
 	}
 
 
 	// 메시지 전송 후 callback
-	@PostMapping("/chatroom/notification")
+	@PostMapping("/chatrooms/notification")
 	public ResponseEntity<Message> sendNotification(@Valid @RequestBody Message message) {
 		Message savedMessage = chatService.sendNotificationAndSaveMessage(message);
 		return ResponseEntity.ok(savedMessage);

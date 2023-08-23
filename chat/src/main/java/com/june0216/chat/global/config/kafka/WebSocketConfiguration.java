@@ -22,8 +22,8 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) { //Stomp를 지원하지 않는 브라우저나 환경에서 사용할경우 SockJS를 사용한 emulataion을 하기 위해 SockJS 사용이 가능하도록 설정
 		registry.addEndpoint("/chat") // STOMP 엔드포인트 설정
-			.setAllowedOriginPatterns("*") // 모든 Origin 허용 -> 배포시에는 보안을 위해 Origin을 정확히 지정
-			.withSockJS(); // SockJS 사용가능 설정
+			.setAllowedOriginPatterns("*"); // 모든 Origin 허용 -> 배포시에는 보안을 위해 Origin을 정확히 지정
+			//.withSockJS(); // SockJS 사용가능 설정
 	}
 
 	// 메시지 브로커를 구성하는 메서드
